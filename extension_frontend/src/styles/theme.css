@@ -116,7 +116,7 @@
 }
 
 @layer base {
-  * {
+  html {
     @apply border-border-custom outline-ring/50;
   }
 
@@ -174,4 +174,8 @@
     font-weight: 400;
     line-height: 1.5;
   }
+  *, ::before, ::after {
+    border-color: var(--border-color, currentColor);
+  }
+}
 }
