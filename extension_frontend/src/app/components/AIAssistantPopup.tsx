@@ -30,7 +30,10 @@ export default function AIAssistantPopup({ isOpen, onClose }: AIAssistantPopupPr
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isMounted, setIsMounted] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const transitionMs = 200;
 
   const { isListening, startListening, stopListening, error: voiceError, supported: voiceSupported } = useVoiceInput();
   const { speak, stopSpeaking, isSpeaking, supported: ttsSupported } = useTextToSpeech();
@@ -42,6 +45,23 @@ export default function AIAssistantPopup({ isOpen, onClose }: AIAssistantPopupPr
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsMounted(true);
+      setIsClosing(false);
+      return;
+    }
+
+    if (isMounted) {
+      setIsClosing(true);
+      const timeoutId = window.setTimeout(() => {
+        setIsMounted(false);
+        setIsClosing(false);
+      }, transitionMs);
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [isOpen, isMounted, transitionMs]);
 
   const sendText = useCallback(async (text: string) => {
     const trimmed = text.trim();
@@ -113,21 +133,23 @@ export default function AIAssistantPopup({ isOpen, onClose }: AIAssistantPopupPr
     }
   };
 
-  if (!isOpen) return null;
+  if (!isMounted) return null;
 
   return (
     <>
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+        className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+          isOpen && !isClosing ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       />
       
       {/* Popup */}
       <div 
-        className={`fixed right-4 bottom-4 w-[360px] bg-white rounded-lg shadow-2xl z-50 flex flex-col border-2 border-saffron transition-all ${
+        className={`fixed right-4 bottom-4 w-[360px] bg-white rounded-lg shadow-2xl z-50 flex flex-col border-2 border-saffron transition-[opacity,transform,height] duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
           isMinimized ? 'h-14' : 'h-[500px]'
-        }`}
+        } ${isOpen && !isClosing ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.98] pointer-events-none'}`}
       >
         {/* Header */}
         <div className="h-14 bg-navy flex items-center justify-between px-4 flex-shrink-0 rounded-t-lg">
