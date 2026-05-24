@@ -301,6 +301,15 @@ html, body {
   transform: scale(0.97);
 }
 
+.btn:focus-visible,
+.service-card:focus-visible,
+.upload-btn:focus-visible,
+.btn-mic:focus-visible,
+.btn-send:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
   color: var(--white);
@@ -754,6 +763,11 @@ html, body {
   height: 0;
 }
 
+.checklist-check input[type="checkbox"]:focus-visible + .checkmark {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
 .checkmark {
   display: block;
   width: 20px;
@@ -822,6 +836,7 @@ html, body {
   height: 36px;
   border-radius: 50%;
   background: var(--saffron-light);
+  border: none;
   cursor: pointer;
   font-size: 18px;
   transition: all 0.2s;

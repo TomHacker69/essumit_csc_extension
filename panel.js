@@ -562,11 +562,11 @@
               <div class="checklist-item-name-en">${doc.name}</div>
               <div class="checklist-item-desc">${doc.description}</div>
             </div>
-            <label class="upload-btn" for="file_${doc.id}" title="फ़ाइल अपलोड करें / Upload File">
+            <button type="button" class="upload-btn" data-doc-id="${doc.id}" title="फ़ाइल अपलोड करें / Upload File" aria-label="फ़ाइल अपलोड करें / Upload File">
               📎
-              <input type="file" id="file_${doc.id}" class="file-input" data-doc-id="${doc.id}"
-                     accept=".pdf,.jpg,.jpeg,.png">
-            </label>
+            </button>
+            <input type="file" id="file_${doc.id}" class="file-input" data-doc-id="${doc.id}"
+                   accept=".pdf,.jpg,.jpeg,.png">
           </div>
           <div class="checklist-item-upload-info hidden" id="uploadInfo_${doc.id}"></div>
         </div>
@@ -602,10 +602,17 @@
     docs.forEach((doc) => {
       const cb = document.getElementById(`cb_${doc.id}`);
       const fileInput = document.getElementById(`file_${doc.id}`);
+      const uploadBtn = document.querySelector(`.upload-btn[data-doc-id="${doc.id}"]`);
 
       if (cb) {
         cb.addEventListener("change", () => {
           updateChecklistState(docs);
+        });
+      }
+
+      if (uploadBtn && fileInput) {
+        uploadBtn.addEventListener("click", () => {
+          fileInput.click();
         });
       }
 
