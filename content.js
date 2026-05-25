@@ -1,81 +1,296 @@
 /* ============================================================
-   CSC Sahayak — Content Script
+   CSC Sahayak — Content Script (Modular Adapter Architecture)
    Form Detection + Auto-Fill Logic
    ============================================================ */
 
 (() => {
   "use strict";
 
-  // ─── Known government form domains ─────────────────────────
-  const GOV_DOMAINS = [
-    "digilocker.gov.in",
-    "umang.gov.in",
-    "serviceonline.gov.in",
-    "edistrict",
-    "cgedistrict",
-    "pmjay.gov.in",
-    "pmkisan.gov.in",
-    "nrega.nic.in",
-    "passport.gov.in",
-    "incometax.gov.in",
-    "epfindia.gov.in",
-    "csc.gov.in",
-    "apnacsc.com",
-    "uidai.gov.in",
-    "meeseva",
-    "emitra",
-    "jansunwai",
-    "parivahan.gov.in",
-    "sarathi.parivahan.gov.in",
-    "vahan.parivahan.gov.in",
-    "aadhaar",
-    "pan.utiitsl.com",
-    "tin-nsdl.com",
-    "sw.cg.gov.in",
-    "kisan.cg.nic.in",
-    "khadya.cg.nic.in",
-    "cgstate.gov.in"
+  // ─── PORTAL ADAPTERS ──────────────────────────────────────
+  // Each portal gets its own adapter with: matches(), extractFields(), autofill(), validate()
+
+  /**
+   * Base Adapter Class - all portals extend this
+   */
+  class BasePortalAdapter {
+    matches(url) {
+      throw new Error('matches() must be implemented');
+    }
+
+    extractFields() {
+      throw new Error('extractFields() must be implemented');
+    }
+
+    autofill(fields, selectors, confidenceMap, filePayloads) {
+      throw new Error('autofill() must be implemented');
+    }
+
+    validate() {
+      throw new Error('validate() must be implemented');
+    }
+  }
+
+  /**
+   * DigiLocker Portal Adapter
+   */
+  class DigiLockerAdapter extends BasePortalAdapter {
+    matches(url) {
+      return url.includes('digilocker.gov.in');
+    }
+
+    extractFields() {
+      return scanFormFields();
+    }
+
+    autofill(fields, selectors, confidenceMap, filePayloads) {
+      return autoFillForm(fields, selectors, confidenceMap, filePayloads);
+    }
+
+    validate() {
+      const fields = this.extractFields();
+      return { isValid: fields.length > 0, fields };
+    }
+  }
+
+  /**
+   * UMANG Portal Adapter
+   */
+  class UmangAdapter extends BasePortalAdapter {
+    matches(url) {
+      return url.includes('umang.gov.in');
+    }
+
+    extractFields() {
+      return scanFormFields();
+    }
+
+    autofill(fields, selectors, confidenceMap, filePayloads) {
+      return autoFillForm(fields, selectors, confidenceMap, filePayloads);
+    }
+
+    validate() {
+      const fields = this.extractFields();
+      return { isValid: fields.length > 0, fields };
+    }
+  }
+
+  /**
+   * Generic Government Portal Adapter (fallback for all other portals)
+   */
+  class GenericGovernmentAdapter extends BasePortalAdapter {
+    matches(url) {
+      const GOV_DOMAINS = [
+        "serviceonline.gov.in",
+        "edistrict",
+        "cgedistrict",
+        "pmjay.gov.in",
+        "pmkisan.gov.in",
+        "nrega.nic.in",
+        "passport.gov.in",
+        "incometax.gov.in",
+        "epfindia.gov.in",
+        "csc.gov.in",
+        "apnacsc.com",
+        "uidai.gov.in",
+        "meeseva",
+        "emitra",
+        "jansunwai",
+        "parivahan.gov.in",
+        "sarathi.parivahan.gov.in",
+        "vahan.parivahan.gov.in",
+        "aadhaar",
+        "pan.utiitsl.com",
+        "tin-nsdl.com",
+        "sw.cg.gov.in",
+        "kisan.cg.nic.in",
+        "khadya.cg.nic.in",
+        "cgstate.gov.in"
+      ];
+
+      const hostname = window.location.hostname.toLowerCase();
+      const href = url.toLowerCase();
+
+      for (const domain of GOV_DOMAINS) {
+        if (hostname.includes(domain) || href.includes(domain)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    extractFields() {
+      return scanFormFields();
+    }
+
+    autofill(fields, selectors, confidenceMap, filePayloads) {
+      return autoFillForm(fields, selectors, confidenceMap, filePayloads);
+    }
+
+    validate() {
+      const fields = this.extractFields();
+      return { isValid: fields.length > 0, fields };
+    }
+  }
+
+  // ─── ADAPTER REGISTRY ──────────────────────────────────────
+  // List of all available adapters
+  const PORTAL_ADAPTERS = [
+    new DigiLockerAdapter(),
+    new UmangAdapter(),
+    new GenericGovernmentAdapter() // Fallback
   ];
 
-  // ─── Form Detection ───────────────────────────────────────
-  function detectGovernmentForm() {
-    const hostname = window.location.hostname.toLowerCase();
-    const href = window.location.href.toLowerCase();
-
-    for (const domain of GOV_DOMAINS) {
-      if (hostname.includes(domain) || href.includes(domain)) {
-        return domain;
+  /**
+   * Find the right adapter for the current URL
+   * @param {string} url
+   * @returns {BasePortalAdapter|null}
+   */
+  function getActiveAdapter(url) {
+    for (const adapter of PORTAL_ADAPTERS) {
+      if (adapter.matches(url)) {
+        return adapter;
       }
     }
     return null;
   }
 
-  // Run detection
-  const detectedDomain = detectGovernmentForm();
+  // ─── LAZY INITIALIZATION ──────────────────────────────────
+  // Only initialize on supported portals
+  const currentUrl = window.location.href;
+  const activeAdapter = getActiveAdapter(currentUrl);
 
-  if (detectedDomain) {
-    chrome.runtime.sendMessage({
-      type: "FORM_DETECTED",
-      domain: detectedDomain,
-      url: window.location.href,
-      title: document.title
-    });
-  } else {
-    chrome.runtime.sendMessage({
-      type: "NO_FORM"
-    });
+  if (!activeAdapter) {
+    console.log('[CSC] Not a supported government portal');
+    return;
   }
 
-  // ─── Auto‐Fill + Form Scanning (triggered by panel) ────────
+  console.log('[CSC] ✅ Initialized for: ' + activeAdapter.constructor.name);
 
-  /**
-   * Dismiss common full-page loading overlays so the form is accessible after auto-fill.
-   * Many government portals keep a loading overlay visible; we hide likely candidates
-   * and also re-enable pointer events on the main page.
-   */
+  // Send form detected message
+  try {
+    chrome.runtime.sendMessage({
+      type: "FORM_DETECTED",
+      adapter: activeAdapter.constructor.name,
+      url: currentUrl,
+      title: document.title
+    });
+  } catch (e) {
+    // Extension might not be loaded
+  }
+
+  // ─── MESSAGE LISTENER ─────────────────────────────────────
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    try {
+      if (message.type === "SCAN_FORM_FIELDS") {
+        const fields = activeAdapter.extractFields();
+        sendResponse({
+          success: true,
+          fields: fields,
+          adapter: activeAdapter.constructor.name
+        });
+      } 
+      else if (message.type === "AUTO_FILL_FORM") {
+        var fields = Object.assign({}, message.fields || {});
+        var selectors = Object.assign({}, message.selectors || {});
+        var confidenceMap = Object.assign({}, message.confidenceMap || {});
+        var filledSelectors = new Set(Object.values(selectors));
+        var scanned = activeAdapter.extractFields();
+        scanned.forEach(function (f) {
+          if (!f.options || !f.options.length) return;
+          if (filledSelectors.has(f.selector)) return;
+          var key = f.fieldKey || ("dropdown_" + (f.selector || "").replace(/[^a-zA-Z0-9]/g, "_"));
+          fields[key] = "__random__";
+          selectors[key] = f.selector;
+          confidenceMap[key] = 0.5;
+          filledSelectors.add(f.selector);
+        });
+
+        const result = activeAdapter.autofill(fields, selectors, confidenceMap, message.filePayloads || {});
+        
+        setTimeout(() => {
+          patchPortalLoadingToggle();
+          scheduleOverlayCleanup();
+          startTemporaryOverlayObserver(20000);
+          forceUnblockPageInteraction();
+        }, 300);
+
+        sendResponse(result);
+      }
+      else if (message.type === "VALIDATE_FORM") {
+        const validation = activeAdapter.validate();
+        sendResponse({
+          success: true,
+          ...validation
+        });
+      }
+      else if (message.action === "FILL_FORM_DESKTOP") {
+        const desktopFields = message.data || [];
+        const liveFormFields = activeAdapter.extractFields();
+        
+        const mappedFields = {};
+        const mappedSelectors = {};
+        const confidenceMap = {};
+        
+        desktopFields.forEach(df => {
+          const val = df.extracted;
+          if (!val || val === '—' || val === '-') return;
+          
+          const match = liveFormFields.find(lf => {
+             const labelLower = (lf.label || "").toLowerCase();
+             const labelHiLower = (lf.labelHi || "").toLowerCase();
+             const nameLower = (lf.fieldKey || "").toLowerCase();
+             
+             const targetEn = (df.fieldEn || "").toLowerCase();
+             const targetHi = (df.field || "").toLowerCase();
+             
+             return (targetEn && (labelLower.includes(targetEn) || targetEn.includes(labelLower) || targetEn.includes(nameLower))) || 
+                    (targetHi && (labelHiLower.includes(targetHi) || targetHi.includes(labelHiLower)));
+          });
+          
+          if (match) {
+             mappedFields[match.fieldKey] = val;
+             mappedSelectors[match.fieldKey] = match.selector;
+             confidenceMap[match.fieldKey] = 0.95;
+          }
+        });
+
+        var filledSel = new Set(Object.values(mappedSelectors));
+        liveFormFields.forEach(function (f) {
+          if (!f.options || !f.options.length) return;
+          if (filledSel.has(f.selector)) return;
+          var key = f.fieldKey || ("dropdown_" + (f.selector || "").replace(/[^a-zA-Z0-9]/g, "_"));
+          mappedFields[key] = "__random__";
+          mappedSelectors[key] = f.selector;
+          confidenceMap[key] = 0.5;
+          filledSel.add(f.selector);
+        });
+
+        const result = activeAdapter.autofill(mappedFields, mappedSelectors, confidenceMap, {});
+        
+        setTimeout(() => {
+          patchPortalLoadingToggle();
+          scheduleOverlayCleanup();
+          startTemporaryOverlayObserver(20000);
+          forceUnblockPageInteraction();
+        }, 300);
+        
+        sendResponse(result);
+      }
+    } catch (error) {
+      console.error('[CSC] Error:', error);
+      sendResponse({
+        success: false,
+        error: error.message
+      });
+    }
+
+    return true;
+  });
+
+  // ─── HELPER FUNCTIONS (same as before) ─────────────────────
+
   function dismissPageLoadingOverlay() {
     try {
-      // 1) Remove obvious full-screen overlay elements
       const candidates = [
         "[class*='loading'][class*='overlay']",
         "[id*='loading'][id*='overlay']",
@@ -104,7 +319,7 @@
               toHide.push(el);
             }
           });
-        } catch (e) { /* ignore invalid selector */ }
+        } catch (e) {}
       });
       toHide.forEach(el => {
         if (el && el.parentNode) {
@@ -114,7 +329,6 @@
         }
       });
 
-      // 2) Some sites gray out the whole page via a "loading" class on body/html
       const roots = [document.body, document.documentElement];
       roots.forEach(root => {
         if (!root || !root.classList) return;
@@ -130,15 +344,9 @@
         root.style.removeProperty("filter");
         root.style.removeProperty("opacity");
       });
-    } catch (e) {
-      // Non-fatal; best-effort only
-    }
+    } catch (e) {}
   }
 
-  /**
-   * After autofill, run overlay dismissal multiple times (in case the site
-   * toggles its loader a bit later).
-   */
   function scheduleOverlayCleanup() {
     dismissPageLoadingOverlay();
     let attempts = 0;
@@ -152,10 +360,6 @@
     }, 500);
   }
 
-  /**
-   * Some portals keep re-attaching loaders or toggling classes dynamically.
-   * Watch the DOM for a short period after auto-fill and continuously remove blockers.
-   */
   let cscOverlayObserver = null;
   function startTemporaryOverlayObserver(durationMs = 20000) {
     try {
@@ -178,17 +382,9 @@
           cscOverlayObserver = null;
         } catch (e) {}
       }, durationMs);
-    } catch (e) {
-      // best-effort only
-    }
+    } catch (e) {}
   }
 
-  /**
-   * Many CG/eDistrict portals use a global loadingToggle() function with a
-   * .loading + .overlay spinner that can get stuck. Patch it so that even if
-   * the page calls loadingToggle(1) and never calls loadingToggle(0),
-   * we auto-hide the overlay after a short grace period.
-   */
   function patchPortalLoadingToggle() {
     try {
       const w = window;
@@ -198,22 +394,17 @@
       const original = w.loadingToggle;
       const patched = function patchedLoadingToggle(flag) {
         try {
-          // Call original implementation so the site logic still works.
           original.apply(this, arguments);
-        } catch (e) {
-          // Ignore original errors; we still enforce our cleanup below.
-        }
+        } catch (e) {}
 
         try {
           const wrappers = document.querySelectorAll(".loading, .overlay");
           wrappers.forEach(el => {
             if (!el) return;
             if (flag === 0) {
-              // Explicit hide request
               el.style.setProperty("display", "none", "important");
               el.style.setProperty("pointer-events", "none", "important");
             } else {
-              // Show request: ensure it cannot block forever
               el.style.setProperty("display", "block", "important");
               el.style.setProperty("pointer-events", "auto", "important");
               setTimeout(() => {
@@ -221,7 +412,7 @@
                   el.style.setProperty("display", "none", "important");
                   el.style.setProperty("pointer-events", "none", "important");
                 } catch (e) {}
-              }, 8000); // max 8s before we force-hide
+              }, 8000);
             }
           });
         } catch (e) {}
@@ -229,127 +420,29 @@
 
       patched.__csc_patched = true;
       w.loadingToggle = patched;
-    } catch (e) {
-      // best-effort only
-    }
+    } catch (e) {}
   }
 
-  /** Ensure the page can be interacted with (pointer events / scrolling). */
   function forceUnblockPageInteraction() {
     try {
       const roots = [document.body, document.documentElement];
       roots.forEach(root => {
         if (!root) return;
         root.style.setProperty("pointer-events", "auto", "important");
-        // Many loaders also lock scrolling
         if ((root.style.overflow || "").toLowerCase() === "hidden") {
           root.style.setProperty("overflow", "auto", "important");
         }
       });
-      // Remove any lingering cursor-wait on body
       if (document.body) document.body.style.removeProperty("cursor");
     } catch (e) {}
   }
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === "AUTO_FILL_FORM") {
-      var fields = Object.assign({}, message.fields || {});
-      var selectors = Object.assign({}, message.selectors || {});
-      var confidenceMap = Object.assign({}, message.confidenceMap || {});
-      var filledSelectors = new Set(Object.values(selectors));
-      var scanned = scanFormFields();
-      scanned.forEach(function (f) {
-        if (!f.options || !f.options.length) return;
-        if (filledSelectors.has(f.selector)) return;
-        var key = f.fieldKey || ("dropdown_" + (f.selector || "").replace(/[^a-zA-Z0-9]/g, "_"));
-        fields[key] = "__random__";
-        selectors[key] = f.selector;
-        confidenceMap[key] = 0.5;
-        filledSelectors.add(f.selector);
-      });
-      const result = autoFillForm(fields, selectors, confidenceMap, message.filePayloads || {});
-      // Give the page a moment to show its own loader, then repeatedly clear it.
-      setTimeout(() => {
-        patchPortalLoadingToggle();
-        scheduleOverlayCleanup();
-        startTemporaryOverlayObserver(20000);
-        forceUnblockPageInteraction();
-      }, 300);
-      sendResponse(result);
-    } else if (message.type === "SCAN_FORM_FIELDS") {
-      const scannedFields = scanFormFields();
-      sendResponse(scannedFields);
-    } else if (message.action === "FILL_FORM_DESKTOP") {
-      // Handle the data specifically coming from the offline desktop sync
-      const desktopFields = message.data || [];
-      const liveFormFields = scanFormFields(); // Discover fields on current page
-      
-      const mappedFields = {};
-      const mappedSelectors = {};
-      const confidenceMap = {};
-      
-      // Attempt to map desktop fieldEn / field to a live form field
-      desktopFields.forEach(df => {
-        const val = df.extracted;
-        if (!val || val === '—' || val === '-') return;
-        
-        // Find best match in live fields based on English or Hindi label
-        const match = liveFormFields.find(lf => {
-           const labelLower = (lf.label || "").toLowerCase();
-           const labelHiLower = (lf.labelHi || "").toLowerCase();
-           const nameLower = (lf.fieldKey || "").toLowerCase();
-           
-           const targetEn = (df.fieldEn || "").toLowerCase();
-           const targetHi = (df.field || "").toLowerCase();
-           
-           // If they share common words
-           return (targetEn && (labelLower.includes(targetEn) || targetEn.includes(labelLower) || targetEn.includes(nameLower))) || 
-                  (targetHi && (labelHiLower.includes(targetHi) || targetHi.includes(labelHiLower)));
-        });
-        
-        if (match) {
-           mappedFields[match.fieldKey] = val;
-           mappedSelectors[match.fieldKey] = match.selector;
-           confidenceMap[match.fieldKey] = 0.95; // Assume high confidence for reviewed offline data
-        }
-      });
-      var filledSel = new Set(Object.values(mappedSelectors));
-      liveFormFields.forEach(function (f) {
-        if (!f.options || !f.options.length) return;
-        if (filledSel.has(f.selector)) return;
-        var key = f.fieldKey || ("dropdown_" + (f.selector || "").replace(/[^a-zA-Z0-9]/g, "_"));
-        mappedFields[key] = "__random__";
-        mappedSelectors[key] = f.selector;
-        confidenceMap[key] = 0.5;
-        filledSel.add(f.selector);
-      });
-      const result = autoFillForm(mappedFields, mappedSelectors, confidenceMap, {});
-      
-      setTimeout(() => {
-        patchPortalLoadingToggle();
-        scheduleOverlayCleanup();
-        startTemporaryOverlayObserver(20000);
-        forceUnblockPageInteraction();
-      }, 300);
-      
-      sendResponse(result);
-    }
-    return true;
-  });
+  // ─── FORM SCANNING & AUTO-FILL (unchanged) ────────────────
 
-  // ─── Dynamic Form Field Scanner ───────────────────────────
-
-  /**
-   * Scan the current page for all form fields.
-   * Returns an array of discovered fields with their selectors and labels.
-   *
-   * @returns {Array<{ fieldKey, label, labelHi, selector, type, tagName, options? }>}
-   */
   function scanFormFields() {
     const fields = [];
     const seen = new Set();
 
-    // Common Hindi → English label mapping for known government fields
     const HINDI_LABEL_MAP = {
       "जन्म की तारीख": "dateOfBirth", "जन्म तिथि": "dateOfBirth",
       "वार्षिक आय": "annualIncome", "आय": "annualIncome",
@@ -383,26 +476,20 @@
     const elements = document.querySelectorAll("input, select, textarea");
 
     elements.forEach((el) => {
-      // Skip unwanted types (file is included so we can extract upload fields and later fill them)
       const inputType = (el.type || "text").toLowerCase();
       if (SKIP_TYPES.has(inputType)) return;
 
-      // Skip invisible elements
       if (el.offsetParent === null && el.type !== "hidden") return;
 
-      // Build the best CSS selector
       const selector = buildSelector(el);
       if (seen.has(selector)) return;
       seen.add(selector);
 
-      // Find the label text
       const labelInfo = findLabelForElement(el);
       const labelText = labelInfo.text;
 
-      // Derive a fieldKey
       let fieldKey = null;
 
-      // Try Hindi mapping first
       const labelLower = labelText.replace(/[*:\s]+/g, " ").trim();
       for (const [hindiPattern, key] of Object.entries(HINDI_LABEL_MAP)) {
         if (labelLower.includes(hindiPattern)) {
@@ -411,7 +498,6 @@
         }
       }
 
-      // Fallback: use name or id attribute
       if (!fieldKey && el.name && el.name.length > 1 && !/^\d+$/.test(el.name)) {
         fieldKey = toCamelCase(el.name);
       }
@@ -419,7 +505,6 @@
         fieldKey = toCamelCase(el.id);
       }
 
-      // Fallback: derive from English part of label
       if (!fieldKey && labelText) {
         const englishPart = labelText.replace(/[^\x00-\x7F()]/g, "").replace(/[*:()]/g, "").trim();
         if (englishPart.length >= 2) {
@@ -427,12 +512,10 @@
         }
       }
 
-      // Last resort: use selector hash
       if (!fieldKey) {
         fieldKey = `field_${el.name || el.id || Math.random().toString(36).slice(2, 8)}`;
       }
 
-      // Avoid duplicate keys
       if (fields.find(f => f.fieldKey === fieldKey)) {
         fieldKey = fieldKey + "_" + (el.name || el.id || fields.length);
       }
@@ -446,14 +529,12 @@
         tagName: el.tagName.toLowerCase()
       };
 
-      // For select elements, include all dropdown options (value + text)
       if (el.tagName === "SELECT") {
         fieldInfo.options = Array.from(el.options)
           .slice(0, 100)
           .map(opt => ({ value: (opt.value || "").trim(), text: (opt.textContent || "").trim() }));
       }
 
-      // For file inputs, include accept and hint for matching (e.g. Aadhaar, Photo)
       if (inputType === "file") {
         fieldInfo.accept = (el.accept || "").trim() || null;
         fieldInfo.multiple = !!el.multiple;
@@ -465,13 +546,9 @@
     return fields;
   }
 
-  /**
-   * Build the most reliable CSS selector for an element.
-   */
   function buildSelector(el) {
     if (el.id) return `#${CSS.escape(el.id)}`;
     if (el.name) return `${el.tagName.toLowerCase()}[name="${CSS.escape(el.name)}"]`;
-    // Fallback: nth-child-based
     const parent = el.parentElement;
     if (parent) {
       const siblings = Array.from(parent.querySelectorAll(el.tagName.toLowerCase()));
@@ -484,14 +561,10 @@
     return el.tagName.toLowerCase();
   }
 
-  /**
-   * Find the label text associated with a form element.
-   */
   function findLabelForElement(el) {
     let text = "";
     let textHi = "";
 
-    // Method 1: explicit <label for="...">
     if (el.id) {
       const label = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
       if (label) {
@@ -500,7 +573,6 @@
       }
     }
 
-    // Method 2: parent/ancestor label
     if (!text) {
       const parentLabel = el.closest("label");
       if (parentLabel) {
@@ -509,9 +581,7 @@
       }
     }
 
-    // Method 3: previous sibling or parent's previous sibling (common in table/div layouts)
     if (!text) {
-      // Check nearby text: td/th before this element
       const parent = el.parentElement;
       if (parent) {
         const prevEl = parent.previousElementSibling;
@@ -522,7 +592,6 @@
       }
     }
 
-    // Method 4: look for preceding heading/span/label text within same row/container
     if (!text) {
       const container = el.closest("tr, .form-group, .form-row, .field-wrapper, div");
       if (container) {
@@ -534,12 +603,10 @@
       }
     }
 
-    // Method 5: placeholder
     if (!text && el.placeholder) {
       text = el.placeholder;
     }
 
-    // Method 6: title attribute
     if (!text && el.title) {
       text = el.title;
     }
@@ -547,11 +614,6 @@
     return { text: text.replace(/\s+/g, " ").trim(), textHi };
   }
 
-  /**
-   * Convert a string label to camelCase fieldKey.
-   * "Father's Name" → "fathersName"
-   * "date_of_birth" → "dateOfBirth"
-   */
   function toCamelCase(str) {
     return str
       .replace(/['']/g, "")
@@ -565,16 +627,6 @@
       .join("");
   }
 
-
-  /**
-   * Auto-fill form fields on the current page.
-   *
-   * @param {Object} fields       — { fieldName: value }
-   * @param {Object} selectors    — { fieldName: "css-selector, ..." }
-   * @param {Object} confidenceMap — { fieldName: confidence (0–1) }
-   * @param {Object} filePayloads — optional { "selector": { base64, fileName, mimeType } }
-   * @returns {{ filledCount, totalFields, details }}
-   */
   function autoFillForm(fields, selectors, confidenceMap, filePayloads) {
     const details = [];
     let filledCount = 0;
@@ -583,7 +635,6 @@
 
     injectAutoFillStyles();
 
-    // 1. Fill text/select/textarea fields from the provided list
     for (const [fieldName, value] of Object.entries(fields)) {
       if (value === undefined || value === null || (typeof value === "string" && !value.trim())) {
         details.push({ field: fieldName, status: "skipped", reason: "empty value" });
@@ -622,7 +673,6 @@
       }
     }
 
-    // 2. Fill every remaining <select> on the page that wasn't filled yet (ensure all dropdowns get a selection)
     Array.from(document.querySelectorAll("select")).forEach(function (sel) {
       if (filledElements.has(sel)) return;
       if (!sel.options || sel.options.length === 0) return;
@@ -636,7 +686,6 @@
       }
     });
 
-    // 3. Fill file inputs from filePayloads (selector -> { base64, fileName, mimeType })
     if (filePayloads && typeof filePayloads === "object") {
       for (const [selectorStr, payload] of Object.entries(filePayloads)) {
         if (!payload || !payload.base64) continue;
@@ -666,20 +715,15 @@
     return { filledCount, totalFields, details };
   }
 
-  /**
-   * Find an element using comma-separated selectors.
-   * Falls back to label text, placeholder, and fuzzy name/id matching.
-   */
   function findElement(selectorStr) {
     const selectors = selectorStr.split(",").map(s => s.trim());
     for (const sel of selectors) {
       try {
         const el = document.querySelector(sel);
         if (el) return el;
-      } catch (e) { /* invalid selector */ }
+      } catch (e) {}
     }
 
-    // Fallback 1: extract key hints from selector strings (name="xxx" → xxx)
     const nameHints = [];
     for (const sel of selectors) {
       const nameMatch = sel.match(/\[name=['"](.*?)['"]\]/);
@@ -689,7 +733,6 @@
     }
 
     if (nameHints.length > 0) {
-      // Fallback 2: fuzzy match against all input/select/textarea elements
       const allFields = Array.from(document.querySelectorAll("input, select, textarea"));
       for (const el of allFields) {
         const elName = (el.name || "").toLowerCase();
@@ -702,19 +745,16 @@
         }
       }
 
-      // Fallback 3: match by associated <label> text
       const allLabels = Array.from(document.querySelectorAll("label"));
       for (const label of allLabels) {
         const labelText = (label.textContent || "").toLowerCase().replace(/[*:\s]+/g, " ").trim();
         for (const hint of nameHints) {
           if (labelText.includes(hint)) {
-            // Find associated input
             const forAttr = label.htmlFor || label.getAttribute("for");
             if (forAttr) {
               const associated = document.getElementById(forAttr);
               if (associated) return associated;
             }
-            // Or look for a nearby input sibling
             const sibling = label.parentElement
               ? label.parentElement.querySelector("input, select, textarea")
               : null;
@@ -727,9 +767,6 @@
     return null;
   }
 
-  /**
-   * Fill a form element with a value, triggering appropriate events.
-   */
   function fillElement(element, value) {
     if (value === undefined || value === null) return;
     const tagName = element.tagName.toLowerCase();
@@ -763,7 +800,6 @@
         element.dispatchEvent(new Event("input", { bubbles: true }));
         element.dispatchEvent(new Event("change", { bubbles: true }));
       } else {
-        // No similarity detected (or __random__ requested): choose a random valid option (skip placeholders like "चुनिये" / "Choose")
         var placeholderTexts = /^(चुनिये|choose|select|please select|कृपया चुनें|--|\-\s*)$/i;
         var validOptions = Array.from(element.options).filter(function (opt) {
           var v = (opt.value || "").trim();
@@ -797,17 +833,13 @@
         const shouldCheck = ["true", "yes", "1", "हाँ"].includes(cleanVal);
         element.checked = shouldCheck;
       } else if (inputType === "date") {
-        // Date inputs REQUIRE yyyy-mm-dd format strictly.
-        // Attempt to parse common formats (dd-mm-yyyy, dd/mm/yyyy) into yyyy-mm-dd
         let formattedDate = value;
         const parts = value.split(/[-/.]/);
         
         if (parts.length === 3) {
           if (parts[0].length === 4) {
-             // already yyyy-mm-dd
              formattedDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
           } else if (parts[2].length === 4) {
-             // assumed dd-mm-yyyy or mm-dd-yyyy (common in India is dd-mm)
              formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
           }
         }
@@ -817,15 +849,10 @@
       }
     }
 
-    // Trigger events so the form recognizes the change.
-    // Avoid aggressive blur() because some portals show a global loader and sometimes never clear it.
     element.dispatchEvent(new Event("input", { bubbles: true }));
     element.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  /**
-   * Highlight auto-filled element based on confidence.
-   */
   function highlightElement(element, confidence) {
     element.classList.add("csc-autofilled");
 
@@ -837,7 +864,6 @@
       element.title = "⚠️ Auto-filled — Please verify / कृपया जाँचें";
     }
 
-    // Add a small indicator badge
     const badge = document.createElement("span");
     badge.className = confidence >= 0.70
       ? "csc-autofill-badge csc-badge-ok"
@@ -851,9 +877,6 @@
     }
   }
 
-  /**
-   * Inject auto-fill highlighting CSS styles into the page.
-   */
   function injectAutoFillStyles() {
     if (document.getElementById("csc-autofill-styles")) return;
 
@@ -893,10 +916,6 @@
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
       }
-
-      /* 🔒 Hard kill common government portal loaders on autofill pages.
-         This targets CG eDistrict-style .loading/.overlay spinners so they
-         cannot block interaction after auto-fill. */
       .loading,
       .loading .overlay,
       .overlay,
