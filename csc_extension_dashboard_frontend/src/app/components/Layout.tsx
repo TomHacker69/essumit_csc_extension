@@ -304,7 +304,14 @@ export default function Layout() {
       }}
     >
       {/* Mini profile card */}
-      <Box sx={{ px: 2, py: 1.5, borderBottom: isDark ? "1px solid #334155" : "1px solid #f0f0f0", mb: 0.5 }}>
+      <Box
+        sx={{
+          px: 2,
+          py: 1.5,
+          borderBottom: isDark ? "1px solid #334155" : "1px solid #f0f0f0",
+          mb: 0.5,
+        }}
+      >
         <Typography sx={{ fontSize: "13px", fontWeight: 700, color: GOV.navy }}>
           Admin User
         </Typography>
@@ -617,6 +624,7 @@ export default function Layout() {
             <IconButton
               size="large"
               aria-label="show 7 new notifications"
+              onClick={() => navigate("/notifications")}
               sx={{
                 color: GOV.blue,
                 "&:hover": { bgcolor: alpha(GOV.blue, 0.06) },
