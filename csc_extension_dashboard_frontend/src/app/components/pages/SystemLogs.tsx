@@ -194,7 +194,7 @@ export default function SystemLogs() {
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
   const [serviceFilter, setServiceFilter] = useState("All");
-
+  const [refreshing, setRefreshing] = useState(false);
   const services = [
     "All",
     ...Array.from(new Set(allLogs.map((l) => l.service))).sort(),
@@ -258,6 +258,12 @@ export default function SystemLogs() {
       },
     );
   };
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setRefreshing(false);
+    toast.success("System logs refreshed successfully!");
+  };
   return (
     <div className="p-5 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -274,8 +280,13 @@ export default function SystemLogs() {
           >
             <Download size={15} /> Export
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground shadow-sm hover:opacity-90">
-            <RefreshCw size={15} /> Refresh
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-50"
+          >
+            <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />{" "}
+            Refresh
           </button>
         </div>
       </div>
