@@ -562,6 +562,8 @@ export default function Layout() {
           <IconButton
             edge="start"
             disableRipple
+            onClick={() => navigate("/")}
+            aria-label="Go to Dashboard Home"
             sx={{ p: 0.5, mr: 1, "&:hover": { bgcolor: "transparent" } }}
           >
             <NationalEmblem />
