@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router';
 import Header from './Header';
 import ProgressStepper from './ProgressStepper';
 import AIAssistantPopup from './AIAssistantPopup';
+import Footer from './Footer';
 
 export default function Layout() {
   const location = useLocation();
@@ -39,6 +40,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <AIAssistantPopup isOpen={isAIPopupOpen} onClose={() => setIsAIPopupOpen(false)} />
+      <Footer />
     </div>
   );
 }

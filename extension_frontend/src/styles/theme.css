@@ -55,64 +55,56 @@
   --ring: #D56B14;
   --radius: 6px;
   
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-dropdown: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
-  --shadow-button: 0 1px 3px rgba(213,107,20,0.2);
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 4px rgb(0 0 0 / 0.04);
+  --shadow-dropdown: 0 10px 25px rgb(0 0 0 / 0.08), 0 4px 10px rgb(0 0 0 / 0.04);
 }
 
 @theme inline {
-  --color-saffron: var(--saffron-primary);
-  --color-saffron-deep: var(--saffron-deep);
-  --color-saffron-light: var(--saffron-light);
-  --color-saffron-hover: var(--saffron-hover);
-  --color-green: var(--green-primary);
-  --color-green-deep: var(--green-deep);
-  --color-green-light: var(--green-light);
-  --color-green-hover: var(--green-hover);
-  --color-navy: var(--navy-primary);
-  --color-navy-light: var(--navy-light);
-  --color-slate: var(--slate-text);
-  --color-muted-text: var(--muted-text);
-  --color-bg-primary: var(--bg-primary);
-  --color-surface: var(--surface-white);
-  --color-border-custom: var(--border-color);
-  --color-border-strong: var(--border-strong);
-  --color-risk-red: var(--risk-red);
-  --color-risk-amber: var(--risk-amber);
-  --color-risk-green: var(--risk-green);
-  
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
+  --color-saffron: #D56B14;
+  --color-saffron-deep: #B85810;
+  --color-saffron-light: #FEF6ED;
+  --color-saffron-hover: #C06012;
+  --color-green: #138944;
+  --color-green-deep: #0C6632;
+  --color-green-light: #F0F9F4;
+  --color-green-hover: #0F7539;
+  --color-navy: #1A2332;
+  --color-navy-light: #2C3E50;
+  --color-slate: #475569;
+  --color-muted-text: #64748B;
+  --color-bg-primary: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-border-custom: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-risk-red: #DC2626;
+  --color-risk-amber: #D97706;
+  --color-risk-green: #138944;
+  --color-background: #F8FAFC;
+  --color-foreground: #1A2332;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1A2332;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1A2332;
+  --color-primary: #D56B14;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #138944;
+  --color-secondary-foreground: #FFFFFF;
+  --color-muted: #64748B;
+  --color-muted-foreground: #64748B;
+  --color-accent: #D56B14;
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-input: transparent;
+  --color-input-background: #FFFFFF;
+  --color-switch-background: #E2E8F0;
+  --color-ring: #D56B14;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 10px;
-  --shadow-card: var(--shadow-card);
-  --shadow-card-hover: var(--shadow-card-hover);
-  --shadow-dropdown: var(--shadow-dropdown);
 }
 
 @layer base {
@@ -150,29 +142,13 @@
     background-color: var(--saffron-primary);
     color: white;
   }
-
-  .card-hover {
-    transition: box-shadow var(--transition-base), transform var(--transition-base);
-  }
-  .card-hover:hover {
-    box-shadow: var(--shadow-card-hover);
-    transform: translateY(-1px);
-  }
-
-  .fade-in {
-    animation: fadeIn var(--transition-slow) ease forwards;
-  }
-  .slide-up {
-    animation: slideUp var(--transition-slow) ease forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

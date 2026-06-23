@@ -118,6 +118,33 @@ export function GovFooter() {
                   <span>🌐</span>
                   <span>www.cgstate.gov.in</span>
                 </div>
+
+                {/* Social Media */}
+                <div className="pt-3 mt-3 border-t border-white/10">
+                  <p className="text-gray-400 text-xs mb-2">
+                    सोशल मीडिया | Social Media
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {[
+                      { name: 'X', href: 'https://twitter.com/CSCegov', color: 'hover:text-white' },
+                      { name: 'FB', href: 'https://facebook.com/CSCeGov', color: 'hover:text-blue-400' },
+                      { name: 'YT', href: 'https://youtube.com/@CSCegov', color: 'hover:text-red-400' },
+                      { name: 'IG', href: 'https://instagram.com/CSCegov', color: 'hover:text-pink-400' },
+                      { name: 'LN', href: 'https://linkedin.com/company/csc-egov', color: 'hover:text-blue-300' },
+                    ].map((s) => (
+                      <a
+                        key={s.name}
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={s.name}
+                        className={`w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-gray-400 ${s.color} transition-all hover:scale-110`}
+                      >
+                        {s.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

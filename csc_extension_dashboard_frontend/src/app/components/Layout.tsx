@@ -20,6 +20,7 @@ import Tab from "@mui/material/Tab";
 import Tooltip from "@mui/material/Tooltip";
 
 import BackToTopButton from "./BackToTopButton";
+import DashboardFooter from "./DashboardFooter";
 
 /* ── MUI icons ────────────────────────────────────────────────── */
 import SearchIcon from "@mui/icons-material/Search";
@@ -810,79 +811,7 @@ export default function Layout() {
         <Outlet />
       </Box>
 
-      {/* ══ FOOTER ══════════════════════════════════════════════ */}
-      <Box
-        component="footer"
-        sx={{
-          flexShrink: 0,
-          px: 3,
-          py: 1.5,
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-          bgcolor: isDark ? "#0b1f4d" : GOV.navy,
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            flexWrap: "wrap",
-          }}
-        >
-          <Typography sx={{ fontSize: "11px", color: alpha(GOV.white, 0.6) }}>
-            © 2026 Ministry of Electronics & Information Technology, Government
-            of India
-          </Typography>
-          <Box component="span" sx={{ color: alpha(GOV.white, 0.25) }}>
-            |
-          </Box>
-          <Typography
-            sx={{
-              fontSize: "11px",
-              color: alpha(GOV.white, 0.6),
-              fontFamily: "Noto Sans Devanagari, sans-serif",
-            }}
-          >
-            सर्वाधिकार सुरक्षित
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          {["Terms of Use", "Privacy Policy", "Accessibility"].map(
-            (lbl, i, arr) => (
-              <Box
-                key={lbl}
-                sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: "11px",
-                    color: alpha(GOV.white, 0.6),
-                    cursor: "pointer",
-                    "&:hover": { color: GOV.white },
-                  }}
-                >
-                  {lbl}
-                </Typography>
-                {i < arr.length - 1 && (
-                  <Box component="span" sx={{ color: alpha(GOV.white, 0.25) }}>
-                    |
-                  </Box>
-                )}
-              </Box>
-            ),
-          )}
-          <Box component="span" sx={{ color: alpha(GOV.white, 0.25) }}>
-            |
-          </Box>
-          <Typography sx={{ fontSize: "11px", color: alpha(GOV.white, 0.8) }}>
-            Last Updated: March 2026
-          </Typography>
-        </Box>
-      </Box>
+      <DashboardFooter isDark={isDark} />
       <BackToTopButton containerRef={mainContentRef} />
     </Box>
   );
