@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { AshokChakra } from './AshokChakra';
 import cgLogo from '../../assets/cg.png';
@@ -20,6 +20,13 @@ interface GovHeaderProps {
 export function GovHeader({ isLoggedIn = false, operatorName = 'राजेश कुमार साहू' }: GovHeaderProps) {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [highContrast, setHighContrast] = useState(false);
+  useEffect(() => {
+  if (highContrast) {
+    document.documentElement.classList.add('high-contrast');
+  } else {
+    document.documentElement.classList.remove('high-contrast');
+  }
+}, [highContrast]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -240,6 +247,15 @@ export function GovHeader({ isLoggedIn = false, operatorName = 'राजेश 
           @keyframes marquee {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
+          }
+           .high-contrast {
+            filter: contrast(150%) brightness(90%);
+            background: #000 !important;
+            color: #fff !important;
+          }
+          .high-contrast body {
+            background: #000 !important;
+            color: #fff !important;
           }
         `}</style>
       </div>
