@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router'
 import Layout from './components/Layout'
+import { NotificationProvider } from './app/context/NotificationContext'
 import Dashboard from './screens/Dashboard'
 import AttendanceTrends from './screens/AttendanceTrends'
 import Notifications from './screens/Notifications'
@@ -11,17 +12,19 @@ import SemesterComparison from './screens/SemesterComparison'
 
 export default function App() {
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/attendance" element={<AttendanceTrends />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/assignments" element={<AssignmentCalendar />} />
-        <Route path="/dashboard" element={<PersonalizedDashboard />} />
-        <Route path="/cgpa" element={<CgpaTracker />} />
-        <Route path="/timetable" element={<Timetable />} />
-        <Route path="/comparison" element={<SemesterComparison />} />
-      </Routes>
-    </Layout>
+    <NotificationProvider>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/attendance" element={<AttendanceTrends />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/assignments" element={<AssignmentCalendar />} />
+          <Route path="/dashboard" element={<PersonalizedDashboard />} />
+          <Route path="/cgpa" element={<CgpaTracker />} />
+          <Route path="/timetable" element={<Timetable />} />
+          <Route path="/comparison" element={<SemesterComparison />} />
+        </Routes>
+      </Layout>
+    </NotificationProvider>
   )
 }
