@@ -10,6 +10,7 @@ import Timetable from './app/screens/Timetable'
 import SemesterComparison from './app/screens/SemesterComparison'
 import QuickActions from './app/screens/QuickActions'
 import CollegeConfigScreen from './app/screens/CollegeConfig'
+import AttendanceGoalPlanner from './app/screens/AttendanceGoalPlanner'
 import { CollegeConfigProvider } from './app/context/CollegeConfigContext'
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/attendance" element={<AttendanceTrends />} />
+          <Route path="/attendance-goal" element={<AttendanceGoalPlanner />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/assignments" element={<AssignmentCalendar />} />
           <Route path="/dashboard" element={<PersonalizedDashboard />} />
