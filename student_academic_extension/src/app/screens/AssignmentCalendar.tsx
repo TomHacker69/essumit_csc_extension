@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Calendar, BookOpen, Filter, Download } from 'lucide-react'
-import { useState } from 'react'
+import { Calendar, Filter, Download } from 'lucide-react'
 
 const assignments = [
   { id: 1, title: 'Data Structures Lab', subject: 'DS', due: '2026-07-20', status: 'pending' },
@@ -10,7 +9,6 @@ const assignments = [
 ]
 
 export default function AssignmentCalendar() {
-  const [month, setMonth] = useState(new Date())
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
