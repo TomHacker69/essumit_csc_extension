@@ -1,6 +1,6 @@
 import { useCollegeConfig } from '../../context/CollegeConfigContext'
 
-export type FeatureKey = 'attendance' | 'assignments' | 'notifications' | 'timetable' | 'cgpa'
+export type FeatureKey = 'attendance' | 'assignments' | 'notifications' | 'timetable' | 'cgpa' | 'smartBookmarking'
 
 const featureLabels: Record<FeatureKey, string> = {
   attendance: 'Attendance',
@@ -8,6 +8,7 @@ const featureLabels: Record<FeatureKey, string> = {
   notifications: 'Notifications',
   timetable: 'Timetable',
   cgpa: 'CGPA',
+  smartBookmarking: 'Smart Bookmarking',
 }
 
 export default function FeatureToggles({ collegeId }: { collegeId: string }) {
