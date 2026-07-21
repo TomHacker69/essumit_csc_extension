@@ -1,14 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { GitCompare, Download } from 'lucide-react'
 
-const semesters = [
-  { name: 'Semester 1', gpa: 8.5, attendance: 92, subjects: 6 },
-  { name: 'Semester 2', gpa: 8.8, attendance: 94, subjects: 6 },
-  { name: 'Semester 3', gpa: 9.0, attendance: 88, subjects: 7 },
-  { name: 'Semester 4', gpa: 8.9, attendance: 85, subjects: 7 },
-  { name: 'Semester 5', gpa: 9.2, attendance: 90, subjects: 6 },
-]
-
 export default function SemesterComparison() {
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-6">
