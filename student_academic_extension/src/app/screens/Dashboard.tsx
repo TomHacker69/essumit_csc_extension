@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Card, CardHeader, CardTitle } from '../components/ui/card'
 import { Link } from 'react-router'
 import { CalendarCheck, Bell, BookOpen, Settings, BarChart3, Clock, GitCompare } from 'lucide-react'
 

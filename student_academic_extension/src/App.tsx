@@ -9,29 +9,26 @@ import CgpaTracker from './app/screens/CgpaTracker'
 import Timetable from './app/screens/Timetable'
 import SemesterComparison from './app/screens/SemesterComparison'
 import QuickActions from './app/screens/QuickActions'
-import { QuickActionsProvider } from './app/context/QuickActionsContext'
 import CollegeConfigScreen from './app/screens/CollegeConfig'
 import { CollegeConfigProvider } from './app/context/CollegeConfigContext'
 
 export default function App() {
   return (
     <CollegeConfigProvider>
-      <QuickActionsProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/attendance" element={<AttendanceTrends />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/assignments" element={<AssignmentCalendar />} />
-            <Route path="/dashboard" element={<PersonalizedDashboard />} />
-            <Route path="/cgpa" element={<CgpaTracker />} />
-            <Route path="/timetable" element={<Timetable />} />
-            <Route path="/comparison" element={<SemesterComparison />} />
-            <Route path="/quick-actions" element={<QuickActions />} />
-            <Route path="/college-config" element={<CollegeConfigScreen />} />
-          </Routes>
-        </Layout>
-      </QuickActionsProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/attendance" element={<AttendanceTrends />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/assignments" element={<AssignmentCalendar />} />
+          <Route path="/dashboard" element={<PersonalizedDashboard />} />
+          <Route path="/cgpa" element={<CgpaTracker />} />
+          <Route path="/timetable" element={<Timetable />} />
+          <Route path="/comparison" element={<SemesterComparison />} />
+          <Route path="/quick-actions" element={<QuickActions />} />
+          <Route path="/college-config" element={<CollegeConfigScreen />} />
+        </Route>
+      </Routes>
     </CollegeConfigProvider>
   )
 }
