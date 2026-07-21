@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Bell, CheckCircle2, Circle, Filter } from 'lucide-react'
+import { Card, CardContent } from '../components/ui/card'
+import { CheckCircle2, Circle, Filter } from 'lucide-react'
 
 const notifications = [
   { id: 1, title: 'New Notice: Mid-term schedule released', time: '2 hours ago', read: false, type: 'notice' },

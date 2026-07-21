@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Clock, MapPin, User } from 'lucide-react'
+import { Card, CardContent } from '../components/ui/card'
+import { MapPin, User } from 'lucide-react'
 
 const todaySchedule = [
   { time: '09:00', subject: 'Data Structures', room: 'Room 301', faculty: 'Dr. Smith', type: 'lecture' },
