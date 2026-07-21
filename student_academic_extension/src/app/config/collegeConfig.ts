@@ -10,6 +10,7 @@ export interface FeatureFlags {
   notifications: boolean
   timetable: boolean
   cgpa: boolean
+  offline: boolean
 }
 
 export interface Selectors {
@@ -52,6 +53,7 @@ export const defaultColleges: CollegeConfig[] = [
       notifications: true,
       timetable: true,
       cgpa: true,
+      offline: true,
     },
     selectors: {
       attendance: '#attendance-table',
@@ -75,6 +77,7 @@ export const defaultColleges: CollegeConfig[] = [
       notifications: true,
       timetable: false,
       cgpa: true,
+      offline: true,
     },
     selectors: {
       attendance: '.attendance-section',

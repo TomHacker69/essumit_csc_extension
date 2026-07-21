@@ -10,6 +10,7 @@ import Timetable from './app/screens/Timetable'
 import SemesterComparison from './app/screens/SemesterComparison'
 import QuickActions from './app/screens/QuickActions'
 import CollegeConfigScreen from './app/screens/CollegeConfig'
+import OfflineAccess from './app/screens/OfflineAccess'
 import { CollegeConfigProvider } from './app/context/CollegeConfigContext'
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/timetable" element={<Timetable />} />
           <Route path="/comparison" element={<SemesterComparison />} />
           <Route path="/quick-actions" element={<QuickActions />} />
+          <Route path="/offline" element={<OfflineAccess />} />
           <Route path="/college-config" element={<CollegeConfigScreen />} />
         </Route>
       </Routes>
